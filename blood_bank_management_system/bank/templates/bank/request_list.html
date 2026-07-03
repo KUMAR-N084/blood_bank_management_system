@@ -1,0 +1,95 @@
+{% extends 'bank/base.html' %}
+{% block title %}Blood Requests — Blood Bank{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-clipboard-pulse"></i> Blood Request Management</h2>
+    <a href="{% url 'request_blood' %}" class="btn btn-danger"><i class="bi bi-plus-circle"></i> Create Urgent Request</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive-wrapper">
+        <table class="table table-hover mb-0" id="requests-table">
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Hospital</th>
+                    <th>Contact</th>
+                    <th>Blood Group</th>
+                    <th>Units</th>
+                    <th>Status</th>
+                    <th>Details / Notification</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for req in requests %}
+                <tr>
+                    <td class="fw-semibold">{{ req.patient_name }}</td>
+                    <td>{{ req.hospital_name }}</td>
+                    <td>
+                        <div><code>{{ req.contact_number }}</code></div>
+                        {% if req.contact_email %}
+                            <small class="text-muted"><i class="bi bi-envelope"></i> {{ req.contact_email }}</small>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-blood fs-6">{{ req.blood_group }}</span></td>
+                    <td class="fw-bold">{{ req.units_required }}</td>
+                    <td>
+                        {% if req.status == 'Pending' %}
+                            <span class="badge badge-pending"><i class="bi bi-clock-history"></i> Pending</span>
+                        {% elif req.status == 'Approved' %}
+                            <span class="badge badge-approved"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                        {% else %}
+                            <span class="badge badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 250px;">
+                        {% if req.reason %}
+                            <div class="text-truncate" title="{{ req.reason }}"><strong>Reason:</strong> {{ req.reason }}</div>
+                        {% endif %}
+                        {% if req.notification %}
+                            <div class="small text-success mt-1"><i class="bi bi-bell"></i> {{ req.notification }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_staff and req.status == 'Pending' %}
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'approve_request' req.id %}" class="btn btn-sm btn-success btn-action-approve" onclick="return confirmAction(event, 'Approve', 'Do you want to approve this blood request and deduct units from available stock?');">
+                                    <i class="bi bi-check-lg"></i> Approve
+                                </a>
+                                <a href="{% url 'reject_request' req.id %}" class="btn btn-sm btn-danger btn-action-reject" onclick="return confirmAction(event, 'Reject', 'Are you sure you want to reject this request?');">
+                                    <i class="bi bi-x-lg"></i> Reject
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <i class="bi bi-clipboard-x"></i>
+                            <p>No blood requests found in the system.</p>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmAction(event, action, message) {
+        if (!confirm(message)) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}

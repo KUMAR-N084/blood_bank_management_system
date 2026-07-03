@@ -1,0 +1,62 @@
+{% extends 'bank/base.html' %}
+{% load static %}
+{% block title %}{{ title }} — Blood Bank{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+        <div class="card shadow-sm auth-card" style="max-width:640px;margin:2rem auto;">
+            <div class="card-header">
+                <i class="bi bi-pencil-square"></i>
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="main-form" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="id_{{ field.html_name }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="field-error">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ field.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-danger" id="btn-submit">
+                            <i class="bi bi-check-lg"></i> Submit
+                        </button>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add Bootstrap form-control class to all inputs
+    document.querySelectorAll('#main-form input, #main-form select, #main-form textarea').forEach(function(el) {
+        if (el.type === 'checkbox' || el.type === 'radio' || el.type === 'hidden') return;
+        if (el.tagName === 'SELECT') {
+            el.classList.add('form-select');
+        } else {
+            el.classList.add('form-control');
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'bank/js/validation.js' %}"></script>
+{% endblock %}

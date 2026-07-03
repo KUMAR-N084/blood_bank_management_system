@@ -1,0 +1,140 @@
+{% extends 'bank/base.html' %}
+{% block title %}Donor List — Blood Bank{% endblock %}
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h2><i class="bi bi-people-fill"></i> Donor Directory</h2>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'apply_donor' %}" class="btn btn-danger"><i class="bi bi-heart-pulse"></i> Apply to be Donor</a>
+        {% if user.is_staff %}
+            <a href="{% url 'export_donors_csv' %}" class="btn btn-outline-danger"><i class="bi bi-download"></i> Export CSV</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<form method="get" class="filter-bar">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-droplet"></i> Blood Group</label>
+            <select name="blood_group" class="form-select" id="filter-blood-group">
+                <option value="">All Blood Groups</option>
+                <option value="A+" {% if selected_group == 'A+' %}selected{% endif %}>A+</option>
+                <option value="A-" {% if selected_group == 'A-' %}selected{% endif %}>A-</option>
+                <option value="B+" {% if selected_group == 'B+' %}selected{% endif %}>B+</option>
+                <option value="B-" {% if selected_group == 'B-' %}selected{% endif %}>B-</option>
+                <option value="AB+" {% if selected_group == 'AB+' %}selected{% endif %}>AB+</option>
+                <option value="AB-" {% if selected_group == 'AB-' %}selected{% endif %}>AB-</option>
+                <option value="O+" {% if selected_group == 'O+' %}selected{% endif %}>O+</option>
+                <option value="O-" {% if selected_group == 'O-' %}selected{% endif %}>O-</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-geo-alt"></i> City</label>
+            <input name="city" value="{{ selected_city|default:'' }}" placeholder="Enter city name" class="form-control" id="filter-city" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-hospital"></i> Hospital</label>
+            <input name="hospital" value="{{ selected_hospital|default:'' }}" placeholder="Hospital (optional)" class="form-control" id="filter-hospital" />
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-danger w-100" id="btn-search"><i class="bi bi-search"></i> Search</button>
+        </div>
+    </div>
+</form>
+
+<!-- Donor Table -->
+<div class="card">
+    <div class="table-responsive-wrapper">
+        <table class="table table-hover mb-0" id="donor-table">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-person"></i> Name</th>
+                    <th><i class="bi bi-hash"></i> Age</th>
+                    <th>Gender</th>
+                    {% if user.is_staff %}<th><i class="bi bi-telephone"></i> Phone</th>{% endif %}
+                    <th><i class="bi bi-geo-alt"></i> City</th>
+                    <th><i class="bi bi-droplet-fill"></i> Blood Group</th>
+                    <th><i class="bi bi-calendar3"></i> Last Donation</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in donors %}
+                    <tr>
+                        <td class="fw-semibold">{{ donor.name }}</td>
+                        <td>{{ donor.age }}</td>
+                        <td>
+                            {% if donor.gender == 'Male' %}
+                                <i class="bi bi-gender-male text-primary"></i>
+                            {% elif donor.gender == 'Female' %}
+                                <i class="bi bi-gender-female text-danger"></i>
+                            {% else %}
+                                <i class="bi bi-gender-ambiguous text-secondary"></i>
+                            {% endif %}
+                            {{ donor.gender }}
+                        </td>
+                        {% if user.is_staff %}<td><code>{{ donor.phone }}</code></td>{% endif %}
+                        <td>{{ donor.city|default:"-" }}</td>
+                        <td><span class="badge badge-blood">{{ donor.blood_group }}</span></td>
+                        <td>{{ donor.last_donation_date|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'request_contact' donor.id %}" class="btn btn-sm btn-outline-danger" title="Request contact info">
+                                <i class="bi bi-chat-square-text"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="{% if user.is_staff %}8{% else %}7{% endif %}">
+                            <div class="empty-state">
+                                <i class="bi bi-people"></i>
+                                <p>No donors found matching your criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Donor list pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&blood_group={{ selected_group|default:'' }}&city={{ selected_city|default:'' }}&hospital={{ selected_hospital|default:'' }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&blood_group={{ selected_group|default:'' }}&city={{ selected_city|default:'' }}&hospital={{ selected_hospital|default:'' }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&blood_group={{ selected_group|default:'' }}&city={{ selected_city|default:'' }}&hospital={{ selected_hospital|default:'' }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next <i class="bi bi-chevron-right"></i></span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

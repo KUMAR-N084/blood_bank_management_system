@@ -1,0 +1,164 @@
+{% extends 'bank/base.html' %}
+{% block title %}Home — Blood Bank Management System{% endblock %}
+{% block content %}
+
+<!-- ===== Hero Section ===== -->
+<div class="hero p-5 rounded text-center mb-4">
+    <h1><i class="bi bi-droplet-fill"></i> Blood Bank Management System</h1>
+    <p class="lead">Connecting donors with those in need. Manage blood stock, donor registrations, and urgent requests — all in one place.</p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+        {% if user.is_authenticated and user.is_staff %}
+            <a href="{% url 'add_donor_staff' %}" class="btn btn-light"><i class="bi bi-person-plus-fill"></i> Register Donor</a>
+            <a href="{% url 'application_list' %}" class="btn btn-outline-light"><i class="bi bi-file-earmark-text"></i> Applications</a>
+            <a href="{% url 'request_list' %}" class="btn btn-outline-light"><i class="bi bi-clipboard-pulse"></i> View Requests</a>
+        {% else %}
+            <a href="{% url 'apply_donor' %}" class="btn btn-light"><i class="bi bi-heart-pulse"></i> Become a Donor</a>
+            <a href="{% url 'request_blood' %}" class="btn btn-outline-light"><i class="bi bi-send"></i> Request Blood</a>
+            <a href="{% url 'book_appointment' %}" class="btn btn-outline-light"><i class="bi bi-calendar-check"></i> Book Appointment</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ===== Stats Cards ===== -->
+<div class="row g-3 mb-5">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <i class="bi bi-people-fill stat-icon"></i>
+            <h3 class="counter" data-target="{{ total_donors }}">{{ total_donors }}</h3>
+            <p>Total Donors</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <i class="bi bi-droplet-fill stat-icon"></i>
+            <h3 class="counter" data-target="{{ total_units }}">{{ total_units }}</h3>
+            <p>Available Units</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <i class="bi bi-clock-history stat-icon"></i>
+            <h3 class="counter" data-target="{{ pending_requests }}">{{ pending_requests }}</h3>
+            <p>Pending Requests</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Blood Stock Grid ===== -->
+<div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="section-title mb-0"><i class="bi bi-droplet-half"></i> Available Blood Stock</h3>
+    {% if user.is_staff %}
+        <a href="{% url 'add_stock' %}" class="btn btn-sm btn-outline-danger ms-auto"><i class="bi bi-plus-circle"></i> Add Stock</a>
+    {% endif %}
+</div>
+<div class="row g-3 mb-5">
+    {% for stock in stocks %}
+        <div class="col-6 col-md-3">
+            <div class="blood-box {% if stock.units <= 3 %}low-stock{% elif stock.units >= 10 %}ok-stock{% endif %}">
+                <h4>{{ stock.blood_group }}</h4>
+                <p>{{ stock.units }} Units</p>
+                <div class="stock-bar">
+                    <div class="stock-bar-fill {% if stock.units <= 3 %}level-low{% elif stock.units <= 7 %}level-mid{% else %}level-high{% endif %}" style="width: {% widthratio stock.units 20 100 %}%"></div>
+                </div>
+                {% if stock.units <= 3 %}
+                    <small class="text-danger fw-semibold mt-1 d-block"><i class="bi bi-exclamation-triangle"></i> Low Stock</small>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-droplet"></i>
+                <p>No blood stock added yet.</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- ===== How It Works ===== -->
+<h3 class="section-title mb-3"><i class="bi bi-lightbulb"></i> How It Works</h3>
+<div class="row g-3 mb-5">
+    <div class="col-md-4">
+        <div class="how-it-works-card">
+            <div class="step-icon"><i class="bi bi-person-plus"></i></div>
+            <h5>1. Register / Apply</h5>
+            <p>Create an account or apply to become a blood donor. Staff reviews and approves applications.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="how-it-works-card">
+            <div class="step-icon"><i class="bi bi-calendar-check"></i></div>
+            <h5>2. Book & Donate</h5>
+            <p>Schedule a donation appointment at your preferred hospital. Get confirmation from staff.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="how-it-works-card">
+            <div class="step-icon"><i class="bi bi-heart-pulse"></i></div>
+            <h5>3. Save Lives</h5>
+            <p>Your donated blood is tracked in our system and dispatched to patients in need.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Quick Actions ===== -->
+<h3 class="section-title mb-3"><i class="bi bi-lightning"></i> Quick Actions</h3>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <a href="{% url 'donor_list' %}" class="quick-action-card">
+            <div class="action-icon"><i class="bi bi-search"></i></div>
+            <h6>Find Donors</h6>
+            <p>Search by blood group or city</p>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'request_blood' %}" class="quick-action-card">
+            <div class="action-icon"><i class="bi bi-send"></i></div>
+            <h6>Request Blood</h6>
+            <p>Submit an urgent request</p>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'apply_donor' %}" class="quick-action-card">
+            <div class="action-icon"><i class="bi bi-heart"></i></div>
+            <h6>Become a Donor</h6>
+            <p>Register as a new donor</p>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'stock_list' %}" class="quick-action-card">
+            <div class="action-icon"><i class="bi bi-bar-chart"></i></div>
+            <h6>View Stock</h6>
+            <p>Check current availability</p>
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animated counter for stat cards
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.counter').forEach(function(el) {
+            var target = parseInt(el.getAttribute('data-target')) || 0;
+            var current = 0;
+            var increment = Math.max(1, Math.ceil(target / 40));
+            var duration = 30; // ms per step
+            function update() {
+                current += increment;
+                if (current >= target) {
+                    el.textContent = target;
+                } else {
+                    el.textContent = current;
+                    setTimeout(update, duration);
+                }
+            }
+            if (target > 0) {
+                el.textContent = '0';
+                setTimeout(update, 200);
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'bank/base.html' %}
+{% block title %}Donation Appointments — Blood Bank{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-calendar2-week"></i> Donation Appointments</h2>
+    <span class="badge bg-secondary">Review scheduled slot bookings</span>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive-wrapper">
+        <table class="table table-hover mb-0" id="appointments-table">
+            <thead>
+                <tr>
+                    <th>Donor Name</th>
+                    <th>Contact Info</th>
+                    <th>Hospital Location</th>
+                    <th>Time Slot</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in appointments %}
+                <tr>
+                    <td class="fw-semibold">{{ a.donor_name }}</td>
+                    <td>
+                        {% if a.donor_phone %}
+                            <div><i class="bi bi-telephone"></i> <code>{{ a.donor_phone }}</code></div>
+                        {% endif %}
+                        {% if a.donor_email %}
+                            <small class="text-muted"><i class="bi bi-envelope"></i> {{ a.donor_email }}</small>
+                        {% endif %}
+                    </td>
+                    <td><i class="bi bi-hospital"></i> {{ a.hospital|default:"Not specified" }}</td>
+                    <td class="fw-semibold text-danger">{{ a.slot|date:"d M Y, h:i A" }}</td>
+                    <td>
+                        {% if a.status == 'Pending' %}
+                            <span class="badge badge-pending"><i class="bi bi-clock-history"></i> Pending</span>
+                        {% elif a.status == 'Confirmed' %}
+                            <span class="badge badge-confirmed"><i class="bi bi-calendar-check"></i> Confirmed</span>
+                        {% elif a.status == 'Completed' %}
+                            <span class="badge badge-completed"><i class="bi bi-check-circle-fill"></i> Completed</span>
+                        {% else %}
+                            <span class="badge badge-cancelled"><i class="bi bi-x-circle"></i> Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if a.status == 'Pending' %}
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'change_appointment_status' a.id 'Confirmed' %}" class="btn btn-sm btn-success" onclick="return confirm('Do you want to confirm this appointment?');">
+                                    <i class="bi bi-calendar-check"></i> Confirm
+                                </a>
+                                <a href="{% url 'change_appointment_status' a.id 'Cancelled' %}" class="btn btn-sm btn-danger" onclick="return confirm('Do you want to cancel this appointment?');">
+                                    <i class="bi bi-calendar-x"></i> Cancel
+                                </a>
+                            </div>
+                        {% elif a.status == 'Confirmed' %}
+                            <a href="{% url 'change_appointment_status' a.id 'Completed' %}" class="btn btn-sm btn-primary" onclick="return confirm('Mark this donation appointment as completed?');">
+                                <i class="bi bi-patch-check"></i> Mark Completed
+                            </a>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <p>No donation appointments scheduled.</p>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

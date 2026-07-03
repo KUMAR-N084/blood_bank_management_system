@@ -1,0 +1,30 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('donors/add/', views.add_donor, name='add_donor'),
+    path('donors/', views.donor_list, name='donor_list'),
+    path('stock/add/', views.add_stock, name='add_stock'),
+    path('stock/', views.stock_list, name='stock_list'),
+    path('request/', views.request_blood, name='request_blood'),
+    path('requests/', views.request_list, name='request_list'),
+    path('requests/<int:request_id>/approve/', views.approve_request, name='approve_request'),
+    path('requests/<int:request_id>/reject/', views.reject_request, name='reject_request'),
+    path('donors/apply/', views.apply_donor, name='apply_donor'),
+    path('applications/', views.application_list, name='application_list'),
+    path('applications/<int:app_id>/accept/', views.accept_application, name='accept_application'),
+    path('donors/add_staff/', views.add_donor_staff, name='add_donor_staff'),
+    path('appointments/book/', views.book_appointment, name='book_appointment'),
+    path('appointments/', views.appointment_list, name='appointment_list'),
+    path('appointments/<int:appt_id>/status/<str:status>/', views.change_appointment_status, name='change_appointment_status'),
+    path('contact/request/<int:donor_id>/', views.request_contact, name='request_contact'),
+    path('contact/request/', views.request_contact, name='request_contact_noid'),
+    path('contact/requests/', views.contact_requests_list, name='contact_requests'),
+    path('contact/requests/<int:req_id>/status/<str:status>/', views.change_contact_request_status, name='change_contact_request_status'),
+    path('export/donors/', views.export_donors_csv, name='export_donors_csv'),
+    path('accounts/register/', views.user_register, name='register'),
+    path('accounts/login/', views.user_login, name='login'),
+    path('accounts/logout/', views.user_logout, name='logout'),
+    path('staff/login/', views.staff_login, name='staff_login'),
+]

@@ -1,0 +1,48 @@
+{% extends 'bank/base.html' %}
+{% block title %}Register — Blood Bank{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card auth-card shadow-sm">
+      <div class="card-header">
+        <i class="bi bi-person-plus"></i>
+        <h5 class="mb-0">{{ title }}</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" id="register-form" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label" for="id_{{ field.html_name }}">
+                <i class="bi bi-pencil-square text-muted"></i>
+                {{ field.label }}
+              </label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text text-muted small">{{ field.help_text|safe }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              {{ form.non_field_errors|join:", " }}
+            </div>
+          {% endif %}
+          <button class="btn btn-danger w-100 mb-3" id="btn-register"><i class="bi bi-person-plus-fill"></i> Register</button>
+          <div class="text-center">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{% url 'login' %}" class="btn btn-link text-decoration-none p-0 ms-1">Login</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('#register-form input').forEach(function(el) { el.classList.add('form-control'); });
+</script>
+{% endblock %}

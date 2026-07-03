@@ -1,0 +1,58 @@
+{% extends 'bank/base.html' %}
+{% block title %}Blood Stock — Blood Bank{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-droplet-half"></i> Blood Stock Inventory</h2>
+    {% if user.is_staff %}
+        <a href="{% url 'add_stock' %}" class="btn btn-danger"><i class="bi bi-plus-circle"></i> Add / Update Stock</a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive-wrapper">
+        <table class="table table-hover mb-0" id="stock-table">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-droplet-fill"></i> Blood Group</th>
+                    <th><i class="bi bi-box"></i> Available Units</th>
+                    <th>Status</th>
+                    <th>Level Indicator</th>
+                    <th><i class="bi bi-clock"></i> Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for stock in stocks %}
+                <tr class="{% if stock.units <= 3 %}table-danger-light{% endif %}">
+                    <td class="fw-bold fs-5 text-danger">{{ stock.blood_group }}</td>
+                    <td class="fw-semibold">{{ stock.units }} Unit{{ stock.units|pluralize }}</td>
+                    <td>
+                        {% if stock.units <= 3 %}
+                            <span class="badge badge-rejected"><i class="bi bi-exclamation-triangle-fill"></i> Critical Low</span>
+                        {% elif stock.units <= 7 %}
+                            <span class="badge badge-pending"><i class="bi bi-exclamation-circle-fill"></i> Moderate</span>
+                        {% else %}
+                            <span class="badge badge-approved"><i class="bi bi-check-circle-fill"></i> Optimal</span>
+                        {% endif %}
+                    </td>
+                    <td style="width: 30%;">
+                        <div class="stock-bar" style="margin-top: 8px;">
+                            <div class="stock-bar-fill {% if stock.units <= 3 %}level-low{% elif stock.units <= 7 %}level-mid{% else %}level-high{% endif %}" style="width: {% widthratio stock.units 20 100 %}%"></div>
+                        </div>
+                    </td>
+                    <td class="text-muted">{{ stock.updated_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="bi bi-droplet-half"></i>
+                            <p>No stock entries found in the system database.</p>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

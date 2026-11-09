@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def run_cmd(args):
     print(f"Running: {' '.join(args)}")
-    res = subprocess.run(args, cwd=BASE_DIR, shell=True)
+    res = subprocess.run(args, cwd=BASE_DIR, shell=False)
     if res.returncode != 0:
         print(f"Error executing command: {' '.join(args)}")
         sys.exit(res.returncode)

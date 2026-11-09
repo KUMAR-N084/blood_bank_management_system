@@ -1,10 +1,18 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-blood-bank-demo-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = []
+load_dotenv(BASE_DIR / '.env')
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('DJANGO_SECRET_KEY is required. Copy .env.example to .env and set a random secret key.')
+
+DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true'
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',

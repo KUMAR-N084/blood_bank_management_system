@@ -18,7 +18,7 @@ The project features a complete developer UI overhaul with the following modern 
 
 ## 🔑 Demo Accounts & Credentials
 
-To assist examiners, teachers, and reviewers, three accounts are pre-configured in the database system. Run the reset script (described below) to guarantee they are active.
+For local evaluation only, the demo fixture creates three sample accounts. Run the reset script (described below) to recreate them. These are public demo credentials, not secure production accounts; change or remove them before any deployment and never enter real donor or patient information into a public demo instance.
 
 | Account Role | Username | Password | Email | Accessible Interfaces |
 | :--- | :--- | :--- | :--- | :--- |
@@ -53,13 +53,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Run One-Click Database Reset
+### 3. Configure local environment
+Copy the example file and generate a fresh Django secret key:
+
+```powershell
+Copy-Item .env.example .env
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
+Paste the generated value into `.env` as `DJANGO_SECRET_KEY=...`. Keep `.env` private and never commit it. `DJANGO_DEBUG` defaults to `false`; enable it only for local development if needed.
+
+### 4. Run One-Click Database Reset
 Execute the database setup script to migrate schemas, populate fixtures, and initialize the demo accounts:
 ```bash
 python reset_demo.py
 ```
 
-### 4. Start the Server
+### 5. Start the Server
 ```bash
 python manage.py runserver
 ```
@@ -73,7 +83,7 @@ Once running, navigate to:
 ## 🛠️ One-Click Database Reset Tool
 
 A helper script `reset_demo.py` is included in the project root. Running it will:
-1. Safely remove any existing `db.sqlite3` database to prevent conflicts.
+1. Remove any existing local `db.sqlite3` database to recreate a clean demo database. The generated database file is intentionally not tracked in Git.
 2. Re-run all Django migration sequences.
 3. Automatically load the expanded database fixtures (`sample_data.json`) including 6 donors, 8 stock blood groups, applications, and requests.
 4. Output the credentials table directly to the console terminal window.
@@ -156,3 +166,12 @@ Run the Django automated unit tests using:
 python manage.py test
 ```
 The test suite validates request flows, permission boundaries, email outputs, and audit logs.
+
+
+## Security and data handling
+
+- The Django secret key is loaded from the local `.env` file; the repository does not contain a production secret.
+- Debug mode is disabled by default. Configure `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` for the hostnames used by a deployment.
+- The repository's SQLite database is generated locally by the reset script and is excluded from version control. The fixture contains synthetic demonstration records.
+- Donor and patient records can contain sensitive personal information. Use only synthetic data for demos, restrict access to staff views, and apply appropriate privacy and security controls before real-world use.
+- The demo usernames and passwords shown above are intentionally public for local evaluation only. Do not deploy the application with those credentials.
